@@ -10,13 +10,9 @@ from langchain_core.tools import tool
 import os
 
 load_dotenv()
-key = os.getenv("GEMINI_API_KEY")
+key = os.getenv("OPENAI_API_KEY")
 
-llm = ChatGoogleGenerativeAI(
-    model = "gemini-2.5-flash",
-    google_api_key = key
-)
-#llm = ChatOpenAI(model = "gpt-4.1-mini-2025-04-14", api_key= key)
+llm = ChatOpenAI(model = "gpt-4.1-mini-2025-04-14", api_key= key)
 
 document_content = ""
 
@@ -51,7 +47,7 @@ def save_document(filename : str) -> str:
     
 tools = [update_document, save_document]
 
-llm.bind_tools(tools)
+llm = llm.bind_tools(tools)
 
 def agent(state : State) -> State:
     system_prompt = SystemMessage(content=f"""
@@ -76,7 +72,7 @@ def agent(state : State) -> State:
     all_messages = [system_prompt] + list(state.get("messages",[])) + [user_message]
                    
     response = llm.invoke(all_messages)
-    print(f"\n AI: {response.content} \n API USAGE : {response.usage_metadata}")
+    print(f"\n AI: {response.content} \n API USAGE : {response.response_metadata}")
 
     if hasattr(response, "tool_calls") and response.tool_calls:
         print(f"USING TOOLS : {[tc["name"] for tc in response.tool_calls]}")
